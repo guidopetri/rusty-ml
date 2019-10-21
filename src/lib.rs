@@ -1,3 +1,9 @@
+use std::ops::Index;
+use std::ops::Mul;
+use std::ops::Add;
+use std::iter::Sum;
+// use std::cmp::PartialEq;
+
 #[cfg(test)]
 mod tests {
     #[test]
@@ -9,8 +15,73 @@ mod tests {
     fn test_array_addition() {
         use crate::array_addition;
 
-        assert_eq!(array_addition(&[1, 2], &[2, 1]), &[3, 3])
+        assert_eq!(array_addition(&[1, 2], &[2, 1]), &[3, 3]);
     }
+
+    #[test]
+    fn test_array_multiplication_int() {
+        use crate::array_multiplication;
+
+        assert_eq!(array_multiplication(&[2, 2], &[2, 1]), &[4, 2]);
+    }
+
+    #[test]
+    fn test_array_multiplication_float() {
+        use crate::array_multiplication;
+
+        assert_eq!(array_multiplication(&[2.1, 2.0], &[2.0, 1.1]), &[4.2, 2.2]);
+    }
+
+    #[test]
+    fn test_matrix_multiplication_samesize() {
+        use crate::matrix_multiplication;
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [1, 2, 0, 1].to_vec(),
+        };
+
+        let b = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [2, 1, 1, 0].to_vec(),
+        };
+
+        let ab = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [4, 1, 1, 0].to_vec(),
+        };
+
+        assert_eq!(matrix_multiplication(&a, &b), ab);
+    }
+/*
+    #[test]
+    fn test_matrix_multiplication_differentsize() {
+        use crate::matrix_multiplication;
+
+        a = DataFrame {
+            rows: 2,
+            cols: 3,
+            data: [1, 2, 1, 0, 1, 1],
+        };
+
+        b = DataFrame {
+            rows: 3,
+            cols: 2,
+            data: [2, 1, 1, 0, 3, 2],
+        };
+
+        ab = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [7, 4, 4, 2],
+        };
+
+        assert_eq!(matrix_multiplication(a, b), ab);
+    }*/
 }
 
 
@@ -22,3 +93,82 @@ pub fn array_addition(a: &[i32], b:&[i32]) -> Vec<i32> {
     }
     c
 }
+
+pub fn array_multiplication<T: Mul<Output = T> + Copy>(a: &[T], b:&[T]) -> Vec<T> {
+    assert_eq!(a.len(), b.len(), "The vectors are not the same length.");
+    let mut c: Vec<T> = vec![];
+    for item in 0..a.len() {
+        c.push(a[item] * b[item]);
+    }
+    c
+}
+
+pub fn matrix_multiplication<'t, T: 't + Mul<Output = T> + Add<Output = T> + Copy + Sum>(a: &DataFrame<T>, b: &DataFrame<T>) -> DataFrame<T> {
+    assert_eq!(a.cols, b.rows, "The matrices are incompatible.");
+    let mut c = DataFrame {
+        rows: a.rows,
+        cols: b.cols,
+        data: Vec::new(),
+    };
+
+    for a_item in 0..a.rows {
+        for b_item in 0..b.cols {
+            c.data.push(array_multiplication(&a[a_item], &b[b_item]).iter().copied().sum());
+        }
+    }
+    c
+}
+
+#[derive(Debug, PartialEq)]
+pub struct DataFrame<T> {
+    rows: usize,
+    cols: usize,
+    data: Vec<T>,
+}
+
+impl<T> DataFrame<T> {
+    fn get(&self, row: usize, col: usize) -> &T {
+         assert!(row < self.rows);
+         assert!(col < self.cols);
+         &self.data[row * self.cols + col]
+    }
+}
+
+impl<T> Index<usize> for DataFrame<T> {
+    type Output = [T];
+
+    fn index(&self, row: usize) -> &Self::Output {
+        assert!(row < self.rows);
+        // assert!(col < self.cols);
+        &self.data[0..2]
+    }
+}
+
+
+
+/*impl<T> Index<usize> for DataFrame<T> {
+    type Output = [T];
+
+    fn index(&self, idx: [usize]) -> &Self::Output {
+        assert!(idx[0] < self.rows);
+        assert!(idx[1] < self.cols);
+        let mut data = vec![];
+
+        for row_idx in idx[0] {
+            for col_idx in idx[1] {
+                data.push(self.get(row_idx, col_idx));
+            }
+        }
+
+        &data
+    }
+}*/
+
+/*
+impl PartialEq<DataFrame> for DataFrame<usize> {
+    fn eq(&self, other: &DataFrame) -> bool {
+        // this should work
+        self.cols == other.cols and self.rows == other.rows and self.data == other.data
+    }
+}
+*/
