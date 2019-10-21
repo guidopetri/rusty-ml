@@ -83,6 +83,63 @@ mod tests {
 
         assert_eq!(matrix_multiplication(&a, &b), ab);
     }
+
+    #[test]
+    fn test_matrix_inversion() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [1, 2, 0, 1].to_vec(),
+        };
+
+        let a_inverted = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [].to_vec(),
+        };
+
+        assert_eq!(a.invert(), a_inverted);
+    }
+
+    #[test]
+    fn test_matrix_transposition_square() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [1, 2, 0, 1].to_vec(),
+        };
+
+        let a_transposed = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [1, 0, 2, 1].to_vec(),
+        };
+
+        assert_eq!(a.transpose(), a_transposed);
+    }
+
+    #[test]
+    fn test_matrix_transposition_rect() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 3,
+            data: [1, 2, 0, 1, 3, 2].to_vec(),
+        };
+
+        let a_transposed = DataFrame {
+            rows: 3,
+            cols: 2,
+            data: [1, 1, 2, 3, 0, 2].to_vec(),
+        };
+
+        assert_eq!(a.transpose(), a_transposed);
+    }
 }
 
 
@@ -152,6 +209,18 @@ impl<T: Copy> DataFrame<T> {
         let idx_start = row * self.cols;
         let idx_end = idx_start + self.cols;
         &self.data[idx_start..idx_end]
+    }
+}
+
+impl<T: Copy> DataFrame<T> {
+    fn invert(&self) -> &DataFrame<T> {
+        0
+    }
+}
+
+impl<T: Copy> DataFrame<T> {
+    fn transpose(&self) -> &DataFrame<T> {
+        0
     }
 }
 
