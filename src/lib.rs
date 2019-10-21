@@ -1,4 +1,4 @@
-use std::ops::Index;
+// use std::ops::Index;
 use std::ops::Mul;
 use std::ops::Add;
 use std::iter::Sum;
@@ -57,31 +57,32 @@ mod tests {
 
         assert_eq!(matrix_multiplication(&a, &b), ab);
     }
-/*
+
     #[test]
     fn test_matrix_multiplication_differentsize() {
         use crate::matrix_multiplication;
+        use crate::DataFrame;
 
-        a = DataFrame {
+        let a = DataFrame {
             rows: 2,
             cols: 3,
-            data: [1, 2, 1, 0, 1, 1],
+            data: [1, 2, 1, 0, 1, 1].to_vec(),
         };
 
-        b = DataFrame {
+        let b = DataFrame {
             rows: 3,
             cols: 2,
-            data: [2, 1, 1, 0, 3, 2],
+            data: [2, 1, 1, 0, 3, 2].to_vec(),
         };
 
-        ab = DataFrame {
+        let ab = DataFrame {
             rows: 2,
             cols: 2,
-            data: [7, 4, 4, 2],
+            data: [7, 3, 4, 2].to_vec(),
         };
 
-        assert_eq!(matrix_multiplication(a, b), ab);
-    }*/
+        assert_eq!(matrix_multiplication(&a, &b), ab);
+    }
 }
 
 
@@ -113,7 +114,7 @@ pub fn matrix_multiplication<'t, T: 't + Mul<Output = T> + Add<Output = T> + Cop
 
     for a_item in 0..a.rows {
         for b_item in 0..b.cols {
-            c.data.push(array_multiplication(&a[a_item], &b[b_item]).iter().copied().sum());
+            c.data.push(array_multiplication(&a.row(a_item), &b.col(b_item)).iter().copied().sum());
         }
     }
     c
@@ -126,23 +127,43 @@ pub struct DataFrame<T> {
     data: Vec<T>,
 }
 
-impl<T> DataFrame<T> {
-    fn get(&self, row: usize, col: usize) -> &T {
-         assert!(row < self.rows);
-         assert!(col < self.cols);
-         &self.data[row * self.cols + col]
+impl<T: Copy> DataFrame<T> {
+    fn get(&self, row: usize, col: usize) -> T {
+        assert!(row < self.rows);
+        assert!(col < self.cols);
+        self.data[row * self.cols + col]
     }
 }
 
-impl<T> Index<usize> for DataFrame<T> {
+impl<T: Copy> DataFrame<T> {
+    fn col(&self, col: usize) -> Vec<T> {
+        assert!(col < self.cols);
+        let mut data = vec![];
+        for row in 0..self.rows {
+            data.push(self.get(row, col));
+        }
+        data
+    }
+}
+
+impl<T: Copy> DataFrame<T> {
+    fn row(&self, row: usize) -> &[T] {
+        assert!(row < self.rows);
+        let idx_start = row * self.cols;
+        let idx_end = idx_start + self.cols;
+        &self.data[idx_start..idx_end]
+    }
+}
+
+/*impl<T> Index<usize> for DataFrame<T> {
     type Output = [T];
 
-    fn index(&self, row: usize) -> &Self::Output {
-        assert!(row < self.rows);
+    fn index(&self, idx: usize) -> &Self::Output {
+        assert!(idx[0] < self.rows);
         // assert!(col < self.cols);
         &self.data[0..2]
     }
-}
+}*/
 
 
 
