@@ -9,10 +9,6 @@ use std::ops::AddAssign;
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 
     #[test]
     fn test_array_addition() {
@@ -217,6 +213,41 @@ mod tests {
         };
 
         assert_eq!(lu_decompose(&b), lu);
+    }
+
+    #[test]
+    fn test_linear_regression_small() {
+        use crate::DataFrame;
+        use crate::linear_regression;
+
+        let data = DataFrame {
+            rows: 3,
+            cols: 3,
+            data: [1, 2, 3,
+                   2, 3, 4,
+                   2, 4, 5,
+                   ].to_vec(),
+        };
+
+        let target = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [14,
+                   20,
+                   25,
+                   ].to_vec(),
+        };
+
+        let regression = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [1_f64,
+                   2.0,
+                   3.0,
+                   ].to_vec(),
+        };
+
+        assert_eq!(linear_regression(&data, &target), regression);
     }
 }
 
