@@ -383,10 +383,40 @@ pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Outpu
     lu
 }
 
-/*
-pub fn linear_regression<T> (datapoints: &DataFrame<T>) -> DataFrame<T> {
+pub fn linear_regression<T: Copy + From<u8> + Div<Output = T> + Mul<Output = T> + Into<f64> + AddAssign + Sub<Output = T>> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> DataFrame<f64> {
+    // based on LU decomposition
+    // theoretically also possible: via matrix transposition/inversion, however, computationally expensive/complicated
     // https://medium.com/@andrew.chamberlain/the-linear-algebra-view-of-least-squares-regression-f67044b7f39b
-}*/
+
+    let lu = lu_decompose(&datapoints);
+
+    let mut y: Vec<f64> = vec![];
+    let mut sum: f64;
+
+    for i in 0..datapoints.rows {
+        sum = 0.0;
+        for k in 0..i {
+            sum += lu.get(i, k) * y[k];
+        }
+        y.push(target.get(i, 0).into() - sum);
+    }
+
+    let mut x: Vec<f64> = vec![0.0; datapoints.cols];
+
+    for i in (0..datapoints.rows).rev() {
+        sum = 0.0;
+        for k in (i+1)..datapoints.rows {
+            sum += lu.get(i, k) * x[k];
+        }
+        x[i] = (y[i] - sum) / lu.get(i, i);
+    }
+
+    DataFrame {
+        rows: datapoints.rows,
+        cols: 1,
+        data: x,
+    }
+}
 
 /*impl<T> Index<usize> for DataFrame<T> {
     type Output = [T];
