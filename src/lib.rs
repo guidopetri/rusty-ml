@@ -2,6 +2,9 @@
 use std::ops::Mul;
 use std::ops::Add;
 use std::iter::Sum;
+use std::ops::Sub;
+use std::ops::Div;
+use std::ops::AddAssign;
 // use std::cmp::PartialEq;
 
 #[cfg(test)]
@@ -141,6 +144,46 @@ mod tests {
 
         assert_eq!(a.transpose(), a_transposed);
     }
+
+    #[test]
+    fn test_matrix_lu_decomposition_small() {
+        use crate::DataFrame;
+        use crate::lu_decompose;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [3, 1, 4, 2].to_vec(),
+        };
+
+        let lu = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [3, 1, 4 / 3, 2 / 3].to_vec(),
+        };
+
+        assert_eq!(lu_decompose(&a), lu);
+    }
+
+    #[test]
+    fn test_matrix_lu_decomposition_large() {
+        use crate::DataFrame;
+        use crate::lu_decompose;
+
+        let b = DataFrame {
+            rows: 3,
+            cols: 3,
+            data: [1, 2, 3, 4, 5, 6, 7, 8, 9].to_vec(),
+        };
+
+        let lu = DataFrame {
+            rows: 3,
+            cols: 3,
+            data: [1, 2, 3, 4, -3, -6, 7, 2, 0].to_vec(),
+        };
+
+        assert_eq!(lu_decompose(&b), lu);
+    }
 }
 
 
@@ -215,7 +258,7 @@ impl<T: Copy> DataFrame<T> {
 
 impl<T: Copy> DataFrame<T> {
     fn invert(&self) -> DataFrame<T> {
-        cholesky = get_cholesky(self);
+        //cholesky = get_cholesky(self);
 
         DataFrame {
             rows: self.rows,
