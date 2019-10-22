@@ -43,19 +43,25 @@ mod tests {
         let a = DataFrame {
             rows: 2,
             cols: 2,
-            data: [1, 2, 0, 1].to_vec(),
+            data: [1, 2,
+                   0, 1
+                   ].to_vec(),
         };
 
         let b = DataFrame {
             rows: 2,
             cols: 2,
-            data: [2, 1, 1, 0].to_vec(),
+            data: [2, 1,
+                   1, 0
+                   ].to_vec(),
         };
 
         let ab = DataFrame {
             rows: 2,
             cols: 2,
-            data: [4, 1, 1, 0].to_vec(),
+            data: [4, 1,
+                   1, 0
+                   ].to_vec(),
         };
 
         assert_eq!(matrix_multiplication(&a, &b), ab);
@@ -69,19 +75,26 @@ mod tests {
         let a = DataFrame {
             rows: 2,
             cols: 3,
-            data: [1, 2, 1, 0, 1, 1].to_vec(),
+            data: [1, 2, 1,
+                   0, 1, 1
+                   ].to_vec(),
         };
 
         let b = DataFrame {
             rows: 3,
             cols: 2,
-            data: [2, 1, 1, 0, 3, 2].to_vec(),
+            data: [2, 1,
+                   1, 0,
+                   3, 2
+                   ].to_vec(),
         };
 
         let ab = DataFrame {
             rows: 2,
             cols: 2,
-            data: [7, 3, 4, 2].to_vec(),
+            data: [7, 3,
+                   4, 2
+                   ].to_vec(),
         };
 
         assert_eq!(matrix_multiplication(&a, &b), ab);
@@ -95,7 +108,9 @@ mod tests {
         let a = DataFrame {
             rows: 2,
             cols: 2,
-            data: [1, 2, 0, 1].to_vec(),
+            data: [1, 2,
+                   0, 1
+                   ].to_vec(),
         };
 
         let a_inverted = DataFrame {
@@ -114,13 +129,17 @@ mod tests {
         let a = DataFrame {
             rows: 2,
             cols: 2,
-            data: [1, 2, 0, 1].to_vec(),
+            data: [1, 2,
+                   0, 1
+                   ].to_vec(),
         };
 
         let a_transposed = DataFrame {
             rows: 2,
             cols: 2,
-            data: [1, 0, 2, 1].to_vec(),
+            data: [1, 0,
+                   2, 1
+                   ].to_vec(),
         };
 
         assert_eq!(a.transpose(), a_transposed);
@@ -133,13 +152,18 @@ mod tests {
         let a = DataFrame {
             rows: 2,
             cols: 3,
-            data: [1, 2, 0, 1, 3, 2].to_vec(),
+            data: [1, 2, 0,
+                   1, 3, 2
+                   ].to_vec(),
         };
 
         let a_transposed = DataFrame {
             rows: 3,
             cols: 2,
-            data: [1, 1, 2, 3, 0, 2].to_vec(),
+            data: [1, 1,
+                   2, 3,
+                   0, 2
+                   ].to_vec(),
         };
 
         assert_eq!(a.transpose(), a_transposed);
