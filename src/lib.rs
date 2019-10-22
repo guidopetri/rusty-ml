@@ -237,6 +237,14 @@ impl<T: Copy> DataFrame<T> {
 }
 
 impl<T: Copy> DataFrame<T> {
+    fn set(&mut self, row: usize, col: usize, value: T) {
+        assert!(row < self.rows);
+        assert!(col < self.cols);
+        self.data[row * self.cols + col] = value;
+    }
+}
+
+impl<T: Copy> DataFrame<T> {
     fn col(&self, col: usize) -> Vec<T> {
         assert!(col < self.cols);
         let mut data = vec![];
