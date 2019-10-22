@@ -331,7 +331,7 @@ pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Outpu
         cols: matrix.cols,
         data: vec![0_f64; matrix.rows * matrix.cols],
     };
-    let mut sum: f64 = 0_f64;
+    let mut sum: f64;
 
     for i in 0..matrix.rows {
         for j in i..matrix.rows {
