@@ -291,6 +291,38 @@ impl<T: Copy> DataFrame<T> {
     }
 }
 
+pub fn lu_decompose<T: Copy + From<u8> + Sub<Output = T> + Div<Output = T> + AddAssign + Mul<Output = T>> (matrix: &DataFrame<T>) -> DataFrame<T> {
+    let mut lu = DataFrame {
+        rows: matrix.rows,
+        cols: matrix.cols,
+        data: vec![T::from(0); matrix.rows * matrix.cols],
+    };
+    let mut sum: T = T::from(0);
+
+    for i in 0..matrix.rows {
+        for j in i..matrix.rows {
+            sum = T::from(0);
+            for k in 0..i {
+                sum += lu.get(i, k) * lu.get(k, j);
+            }
+            lu.set(i, j, matrix.get(i, j) - sum);
+        }
+        for j in i+1..matrix.rows {
+            sum = T::from(0);
+            for k in 0..i {
+                sum += lu.get(j, k) * lu.get(k, i);
+            }
+            lu.set(j, i, (matrix.get(j, i) - sum) / lu.get(i, i));
+        }
+    }
+    lu
+}
+
+/*
+pub fn linear_regression<T> (datapoints: &DataFrame<T>) -> DataFrame<T> {
+    // https://medium.com/@andrew.chamberlain/the-linear-algebra-view-of-least-squares-regression-f67044b7f39b
+}*/
+
 /*impl<T> Index<usize> for DataFrame<T> {
     type Output = [T];
 
