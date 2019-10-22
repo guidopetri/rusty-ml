@@ -177,13 +177,17 @@ mod tests {
         let a = DataFrame {
             rows: 2,
             cols: 2,
-            data: [3, 1, 4, 2].to_vec(),
+            data: [3, 1,
+                   4, 2
+                   ].to_vec(),
         };
 
         let lu = DataFrame {
             rows: 2,
             cols: 2,
-            data: [3, 1, 4 / 3, 2 / 3].to_vec(),
+            data: [3_f64, 1.0,
+                   (4.0 / 3.0), (2.0 / 3.0)
+                  ].to_vec(),
         };
 
         assert_eq!(lu_decompose(&a), lu);
@@ -197,13 +201,19 @@ mod tests {
         let b = DataFrame {
             rows: 3,
             cols: 3,
-            data: [1, 2, 3, 4, 5, 6, 7, 8, 9].to_vec(),
+            data: [1, 2, 3,
+                   4, 5, 6,
+                   7, 8, 9
+                   ].to_vec(),
         };
 
         let lu = DataFrame {
             rows: 3,
             cols: 3,
-            data: [1, 2, 3, 4, -3, -6, 7, 2, 0].to_vec(),
+            data: [1_f64, 2.0, 3.0,
+                   4.0, -3.0, -6.0,
+                   7.0, 2.0, 0.0
+                   ].to_vec(),
         };
 
         assert_eq!(lu_decompose(&b), lu);
@@ -315,28 +325,28 @@ impl<T: Copy> DataFrame<T> {
     }
 }
 
-pub fn lu_decompose<T: Copy + From<u8> + Sub<Output = T> + Div<Output = T> + AddAssign + Mul<Output = T>> (matrix: &DataFrame<T>) -> DataFrame<T> {
+pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Output = T> + AddAssign + Mul<Output = T>> (matrix: &DataFrame<T>) -> DataFrame<f64> {
     let mut lu = DataFrame {
         rows: matrix.rows,
         cols: matrix.cols,
-        data: vec![T::from(0); matrix.rows * matrix.cols],
+        data: vec![0_f64; matrix.rows * matrix.cols],
     };
-    let mut sum: T = T::from(0);
+    let mut sum: f64 = 0_f64;
 
     for i in 0..matrix.rows {
         for j in i..matrix.rows {
-            sum = T::from(0);
+            sum = 0_f64;
             for k in 0..i {
                 sum += lu.get(i, k) * lu.get(k, j);
             }
-            lu.set(i, j, matrix.get(i, j) - sum);
+            lu.set(i, j, matrix.get(i, j).into() - sum);
         }
         for j in i+1..matrix.rows {
-            sum = T::from(0);
+            sum = 0_f64;
             for k in 0..i {
                 sum += lu.get(j, k) * lu.get(k, i);
             }
-            lu.set(j, i, (matrix.get(j, i) - sum) / lu.get(i, i));
+            lu.set(j, i, (matrix.get(j, i).into() - sum) / lu.get(i, i));
         }
     }
     lu
