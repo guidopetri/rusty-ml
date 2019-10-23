@@ -218,7 +218,7 @@ mod tests {
     #[test]
     fn test_linear_regression_small() {
         use crate::DataFrame;
-        use crate::linear_regression;
+        use crate::linear_regression_lu;
 
         let data = DataFrame {
             rows: 3,
@@ -247,7 +247,7 @@ mod tests {
                    ].to_vec(),
         };
 
-        assert_eq!(linear_regression(&data, &target), regression);
+        assert_eq!(linear_regression_lu(&data, &target), regression);
     }
 }
 
@@ -383,7 +383,7 @@ pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Outpu
     lu
 }
 
-pub fn linear_regression<T: Copy + From<u8> + Div<Output = T> + Mul<Output = T> + Into<f64> + AddAssign + Sub<Output = T>> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> DataFrame<f64> {
+pub fn linear_regression_lu<T: Copy + From<u8> + Div<Output = T> + Mul<Output = T> + Into<f64> + AddAssign + Sub<Output = T>> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> DataFrame<f64> {
     // based on LU decomposition
     // theoretically also possible: via matrix transposition/inversion, however, computationally expensive/complicated
     // https://medium.com/@andrew.chamberlain/the-linear-algebra-view-of-least-squares-regression-f67044b7f39b
