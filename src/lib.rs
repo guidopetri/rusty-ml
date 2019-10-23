@@ -142,6 +142,60 @@ mod tests {
     }
 
     #[test]
+    fn test_matrix_multiplication_scalar() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [1.0, 2.0,
+                   0.0, 1.0
+                   ].to_vec(),
+        };
+
+        let a_multiplied = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [2.0, 4.0,
+                   0.0, 2.0
+                   ].to_vec(),
+        };
+
+        assert_eq!(2.0 * a, a_multiplied);
+    }
+
+    #[test]
+    fn test_matrix_subtraction() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [1.0, 2.0,
+                   1.0, 1.0
+                   ].to_vec(),
+        };
+
+        let b = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [3.0, 2.0,
+                   0.0, 7.0
+                   ].to_vec(),
+        };
+
+        let b_a = DataFrame {
+            rows: 2,
+            cols: 2,
+            data: [2.0, 0.0,
+                   -1.0, 6.0
+                   ].to_vec(),
+        };
+
+        assert_eq!(b - a, b_a);
+    }
+
+    #[test]
     fn test_matrix_transposition_rect() {
         use crate::DataFrame;
 
@@ -352,6 +406,30 @@ impl<T: Copy> DataFrame<T> {
             rows: self.cols,
             cols: self.rows,
             data: data,
+        }
+    }
+}
+
+impl<T: Mul<Output = T> + Copy + From<f64>> std::ops::Mul<DataFrame<T>> for f64 {
+    type Output = DataFrame<T>;
+
+    fn mul(self, right: DataFrame<T>) -> DataFrame<T> {
+        DataFrame {
+            rows: right.rows,
+            cols: right.cols,
+            data: right.data.iter().map(|&x| (T::from(self)) * x).collect(),
+        }
+    }
+}
+
+impl<T: Sub<Output = T> + Copy + From<f64>> std::ops::Sub<DataFrame<T>> for DataFrame<T> {
+    type Output = DataFrame<T>;
+
+    fn sub(self, right: DataFrame<T>) -> DataFrame<T> {
+        DataFrame {
+            rows: self.rows,
+            cols: self.cols,
+            data: self.data.iter().zip(right.data.iter()).map(|(&x, &y)| x - y).collect(),
         }
     }
 }
