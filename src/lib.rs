@@ -165,6 +165,23 @@ mod tests {
     }
 
     #[test]
+    fn test_vector_len() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 1,
+            data: [1.0,
+                   2.0,
+                   ].to_vec(),
+        };
+
+        let a_len: f64 = 5.0_f64.sqrt();
+
+        assert_eq!(a.len(), a_len);
+    }
+
+    #[test]
     fn test_matrix_subtraction() {
         use crate::DataFrame;
 
@@ -380,6 +397,14 @@ impl<T: Copy> DataFrame<T> {
         let idx_start = row * self.cols;
         let idx_end = idx_start + self.cols;
         &self.data[idx_start..idx_end]
+    }
+}
+
+impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + From<u8> + Add<Output = T>> DataFrame<T> {
+    fn len(&self) -> T {
+        assert!(self.cols == 1);
+        let vec_len: f64 = self.data.iter().fold(0.0, |acc, &x| acc + x.into() * x.into());
+        T::from(vec_len.sqrt())
     }
 }
 
