@@ -288,7 +288,7 @@ mod tests {
     }
 
     #[test]
-    fn test_linear_regression_small() {
+    fn test_linear_regression_small_lu() {
         use crate::DataFrame;
         use crate::linear_regression_lu;
 
@@ -320,6 +320,41 @@ mod tests {
         };
 
         assert_eq!(linear_regression_lu(&data, &target), regression);
+    }
+
+    #[test]
+    fn test_linear_regression_small_gd() {
+        use crate::DataFrame;
+        use crate::linear_regression_gd;
+
+        let data = DataFrame {
+            rows: 3,
+            cols: 3,
+            data: [1.0, 2.0, 3.0,
+                   2.0, 3.0, 4.0,
+                   2.0, 4.0, 5.0,
+                   ].to_vec(),
+        };
+
+        let target = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [14.0,
+                   20.0,
+                   25.0,
+                   ].to_vec(),
+        };
+
+        let regression = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [1_f64,
+                   2.0,
+                   3.0,
+                   ].to_vec(),
+        };
+
+        assert_eq!(linear_regression_gd(&data, &target), regression);
     }
 }
 
