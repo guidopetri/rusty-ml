@@ -444,6 +444,12 @@ impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + Add<Output = T>> DataFr
     }
 }
 
+impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + Add<Output = T>> DataFrame<T> {
+    fn abs(&self) -> T {
+        self.len()
+    }
+}
+
 impl<T: Copy> DataFrame<T> {
     fn invert(&self) -> DataFrame<T> {
         //cholesky = get_cholesky(self);
