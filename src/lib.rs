@@ -661,27 +661,34 @@ pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Outpu
     lu
 }
 
-pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T>> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> DataFrame<T> {
+pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> (DataFrame<T>, T) where
+    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
     // 2A^T * A * x - 2 A^T * y = grad
 
     let tol: f64 = 0.0001;
     let step_size: f64 = 0.01;
-    let mut grad: DataFrame<T> = DataFrame {
-        rows: datapoints.cols,
+    let b_helper_col = DataFrame {
+        rows: datapoints.rows,
         cols: 1,
         data: vec![T::from(1.0); datapoints.cols],
     };
-    let mut x: DataFrame<T> = DataFrame {
-        rows: datapoints.cols,
+    let data = datapoints.append_col(&b_helper_col);
+    let mut grad: DataFrame<T> = DataFrame {
+        rows: data.cols,
         cols: 1,
-        data: vec![T::from(1.0); datapoints.cols],
+        data: vec![T::from(1.0); data.cols],
+    };
+    let mut x: DataFrame<T> = DataFrame {
+        rows: data.cols,
+        cols: 1,
+        data: vec![T::from(1.0); data.cols],
     };
 
     while grad.len() > tol.into() {
         // calculate gradient
 
-        let atax: DataFrame<T> = 2.0 * &matrix_multiplication(&matrix_multiplication(&datapoints.transpose(), &datapoints), &x);
-        let aty: DataFrame<T> = 2.0 * &matrix_multiplication(&datapoints.transpose(), &target);
+        let atax: DataFrame<T> = 2.0 * &matrix_multiplication(&matrix_multiplication(&data.transpose(), &data), &x);
+        let aty: DataFrame<T> = 2.0 * &matrix_multiplication(&data.transpose(), &target);
 
         grad = &atax - &aty;
 
@@ -689,8 +696,8 @@ pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<O
         x = &x - &(step_size * &grad);
 
     }
-
-    x
+    let b: T = x.row(x.rows - 1)[0];
+    (x.pop(), b)
 }
 
 
