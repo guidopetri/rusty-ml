@@ -162,7 +162,7 @@ mod tests {
                    ].to_vec(),
         };
 
-        assert_eq!(2.0 * a, a_multiplied);
+        assert_eq!(2.0 * &a, a_multiplied);
     }
 
     #[test]
@@ -471,10 +471,10 @@ impl<T: Copy> DataFrame<T> {
     }
 }
 
-impl<T: Mul<Output = T> + Copy + From<f64>> std::ops::Mul<DataFrame<T>> for f64 {
+impl<T: Mul<Output = T> + Copy + From<f64>> std::ops::Mul<&DataFrame<T>> for f64 {
     type Output = DataFrame<T>;
 
-    fn mul(self, right: DataFrame<T>) -> DataFrame<T> {
+    fn mul(self, right: &DataFrame<T>) -> DataFrame<T> {
         DataFrame {
             rows: right.rows,
             cols: right.cols,
@@ -540,8 +540,8 @@ pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<O
     while grad.len() > tol.into() {
         // calculate gradient
 
-        let atax: DataFrame<T> = 2.0 * matrix_multiplication(&matrix_multiplication(&datapoints.transpose(), &datapoints), &x);
-        let aty: DataFrame<T> = 2.0 * matrix_multiplication(&datapoints.transpose(), &target);
+        let atax: DataFrame<T> = 2.0 * &matrix_multiplication(&matrix_multiplication(&datapoints.transpose(), &datapoints), &x);
+        let aty: DataFrame<T> = 2.0 * &matrix_multiplication(&datapoints.transpose(), &target);
 
         grad = &atax - &aty;
 
