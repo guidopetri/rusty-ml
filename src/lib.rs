@@ -543,11 +543,10 @@ pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<O
         let atax: DataFrame<T> = 2.0 * matrix_multiplication(&matrix_multiplication(&datapoints.transpose(), &datapoints), &x);
         let aty: DataFrame<T> = 2.0 * matrix_multiplication(&datapoints.transpose(), &target);
 
-        grad = atax - aty;
+        grad = &atax - &aty;
 
         // update x
-
-        x = x - grad;
+        x = &x - &grad;
 
     }
 
