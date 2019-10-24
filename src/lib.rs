@@ -670,7 +670,7 @@ pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>, target: &DataFrame<T>
     let b_helper_col = DataFrame {
         rows: datapoints.rows,
         cols: 1,
-        data: vec![T::from(1.0); datapoints.cols],
+        data: vec![T::from(1.0); datapoints.rows],
     };
     let data = datapoints.append_col(&b_helper_col);
     let mut grad: DataFrame<T> = DataFrame {
