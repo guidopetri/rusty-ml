@@ -414,7 +414,7 @@ mod tests {
 
         let b: f64 = 1.0;
 
-        let result = linear_regression_gd(&data, &target);
+        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 100000);
 
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
@@ -469,7 +469,7 @@ mod tests {
 
         let b: f64 = 0.7;
 
-        let result = linear_regression_gd(&data, &target);
+        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 100000);
 
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
@@ -673,12 +673,14 @@ pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Outpu
     lu
 }
 
-pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> (DataFrame<T>, T) where
+pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>,
+                                target: &DataFrame<T>,
+                                tol: f64,
+                                step_size: f64,
+                                n_iter: i32) -> (DataFrame<T>, T) where
     T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
     // 2A^T * A * x - 2 A^T * y = grad
 
-    let tol: f64 = 0.0001;
-    let step_size: f64 = 0.001;
     let b_helper_col = DataFrame {
         rows: datapoints.rows,
         cols: 1,
@@ -696,7 +698,9 @@ pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>, target: &DataFrame<T>
         data: vec![T::from(1.0); data.cols],
     };
 
-    while grad.len() > tol.into() {
+    let mut iter: i32 = 0;
+
+    while (grad.len() > tol.into()) & (iter <= n_iter) {
         // calculate gradient
 
         let atax: DataFrame<T> = 2.0 * &matrix_multiplication(&matrix_multiplication(&data.transpose(), &data), &x);
@@ -707,6 +711,8 @@ pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>, target: &DataFrame<T>
         // update x
         x = &x - &(step_size * &grad);
 
+        // update iter count
+        iter += 1;
     }
     let b: T = x.row(x.rows - 1)[0];
     (x.pop(), b)
