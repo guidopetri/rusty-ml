@@ -210,7 +210,7 @@ mod tests {
                    ].to_vec(),
         };
 
-        assert_eq!(b - a, b_a);
+        assert_eq!(&b - &a, b_a);
     }
 
     #[test]
@@ -448,10 +448,10 @@ impl<T: Mul<Output = T> + Copy + From<f64>> std::ops::Mul<DataFrame<T>> for f64 
     }
 }
 
-impl<T: Sub<Output = T> + Copy + From<f64>> std::ops::Sub<DataFrame<T>> for DataFrame<T> {
+impl<T: Sub<Output = T> + Copy + From<f64>> std::ops::Sub<&DataFrame<T>> for &DataFrame<T> {
     type Output = DataFrame<T>;
 
-    fn sub(self, right: DataFrame<T>) -> DataFrame<T> {
+    fn sub(self, right: &DataFrame<T>) -> DataFrame<T> {
         DataFrame {
             rows: self.rows,
             cols: self.cols,
