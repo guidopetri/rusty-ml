@@ -326,6 +326,7 @@ mod tests {
     fn test_linear_regression_small_gd() {
         use crate::DataFrame;
         use crate::linear_regression_gd;
+        use assert_approx_eq::assert_approx_eq;
 
         let data = DataFrame {
             rows: 3,
@@ -354,7 +355,57 @@ mod tests {
                    ].to_vec(),
         };
 
-        assert_eq!(linear_regression_gd(&data, &target), regression);
+        assert_approx_eq!(&linear_regression_gd(&data, &target), &regression, 0.001);
+    }
+
+    #[test]
+    fn test_linear_regression_medium_gd() {
+        use crate::DataFrame;
+        use crate::linear_regression_gd;
+        use assert_approx_eq::assert_approx_eq;
+
+        let data = DataFrame {
+            rows: 3,
+            cols: 3,
+            data: [1.0, 2.0, 3.0,
+                   2.0, 3.0, 4.0,
+                   2.0, 4.0, 5.0,
+                   2.2, 4.0, 5.3,
+                   8.3, 5.4, 7.2,
+                   1.2, 5.3, 4.3,
+                   1.5, 0.3, 6.3,
+                   2.15, 3.7, 9.2,
+                   1.05, 2.3, 4.4,
+                   4.0, 4.0, 2.0,
+                   ].to_vec(),
+        };
+
+        let target = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [14.0,
+                   20.7,
+                   25.2,
+                   26.0,
+                   40.6,
+                   25.0,
+                   22.3,
+                   35.7,
+                   17.3,
+                   19.4,
+                   ].to_vec(),
+        };
+
+        let regression = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [2.2_f64,
+                   1.7,
+                   2.8,
+                   ].to_vec(),
+        };
+
+        assert_approx_eq!(&linear_regression_gd(&data, &target), &regression, 0.001);
     }
 }
 
