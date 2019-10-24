@@ -288,6 +288,40 @@ mod tests {
     }
 
     #[test]
+    fn test_matrix_append_col() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 3,
+            cols: 3,
+            data: [1, 2, 3,
+                   4, 5, 6,
+                   7, 8, 9
+                   ].to_vec(),
+        };
+
+        let other = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [1,
+                   1,
+                   1,
+                   ].to_vec(),
+        };
+
+        let appended = DataFrame {
+            rows: 3,
+            cols: 4,
+            data: [1, 2, 3, 1,
+                   4, 5, 6, 1,
+                   7, 8, 9, 1,
+                   ].to_vec(),
+        };
+
+        assert_eq!(a.append_col(&other), appended);
+    }
+
+    #[test]
     fn test_linear_regression_small_lu() {
         use crate::DataFrame;
         use crate::linear_regression_lu;
@@ -517,12 +551,29 @@ impl<T: Copy> DataFrame<T> {
     fn transpose(&self) -> DataFrame<T> {
         let mut data = vec![];
         for col in 0..self.cols {
-            data.extend(self.col(col))
+            data.extend(self.col(col));
         }
 
         DataFrame {
             rows: self.cols,
             cols: self.rows,
+            data: data,
+        }
+    }
+}
+
+impl<T: Copy> DataFrame<T> {
+    fn append_col(&self, other: &DataFrame<T>) -> DataFrame<T> {
+        assert!(other.cols == 1);
+        let mut data = vec![];
+        for row in 0..self.rows {
+            data.extend(self.row(row));
+            data.extend(other.row(row));
+        }
+
+        DataFrame {
+            rows: self.rows,
+            cols: self.cols + 1,
             data: data,
         }
     }
