@@ -384,20 +384,22 @@ mod tests {
         use assert_approx_eq::assert_approx_eq;
 
         let data = DataFrame {
-            rows: 3,
+            rows: 4,
             cols: 3,
             data: [1.0, 2.0, 3.0,
                    2.0, 3.0, 4.0,
                    2.0, 4.0, 5.0,
+                   1.0, 2.0, 2.5,
                    ].to_vec(),
         };
 
         let target = DataFrame {
-            rows: 3,
+            rows: 4,
             cols: 1,
-            data: [14.0,
-                   20.0,
-                   25.0,
+            data: [15.0,
+                   21.0,
+                   26.0,
+                   13.5,
                    ].to_vec(),
         };
 
@@ -410,7 +412,12 @@ mod tests {
                    ].to_vec(),
         };
 
-        assert_approx_eq!(&linear_regression_gd(&data, &target), &regression, 0.001);
+        let b: f64 = 1.0;
+
+        let result = linear_regression_gd(&data, &target);
+
+        assert_approx_eq!(&result.0, &regression, 0.001);
+        assert_approx_eq!(&result.1, &b, 0.001);
     }
 
     #[test]
@@ -455,12 +462,17 @@ mod tests {
             rows: 3,
             cols: 1,
             data: [2.2_f64,
-                   1.7,
-                   2.8,
+                   2.4,
+                   2.1,
                    ].to_vec(),
         };
 
-        assert_approx_eq!(&linear_regression_gd(&data, &target), &regression, 0.001);
+        let b: f64 = 0.7;
+
+        let result = linear_regression_gd(&data, &target);
+
+        assert_approx_eq!(&result.0, &regression, 0.001);
+        assert_approx_eq!(&result.1, &b, 0.001);
     }
 }
 
@@ -666,7 +678,7 @@ pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>, target: &DataFrame<T>
     // 2A^T * A * x - 2 A^T * y = grad
 
     let tol: f64 = 0.0001;
-    let step_size: f64 = 0.01;
+    let step_size: f64 = 0.001;
     let b_helper_col = DataFrame {
         rows: datapoints.rows,
         cols: 1,
