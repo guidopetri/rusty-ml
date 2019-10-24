@@ -526,6 +526,7 @@ pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<O
     // 2A^T * A * x - 2 A^T * y = grad
 
     let tol: f64 = 0.0001;
+    let step_size: f64 = 0.01;
     let mut grad: DataFrame<T> = DataFrame {
         rows: datapoints.cols,
         cols: 1,
@@ -546,7 +547,7 @@ pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<O
         grad = &atax - &aty;
 
         // update x
-        x = &x - &grad;
+        x = &x - &(step_size * &grad);
 
     }
 
