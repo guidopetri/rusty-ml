@@ -5,6 +5,7 @@ use std::iter::Sum;
 use std::ops::Sub;
 use std::ops::Div;
 use std::ops::AddAssign;
+use std::cmp::PartialOrd;
 // use std::cmp::PartialEq;
 
 #[cfg(test)]
@@ -400,7 +401,7 @@ impl<T: Copy> DataFrame<T> {
     }
 }
 
-impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + From<u8> + Add<Output = T>> DataFrame<T> {
+impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + Add<Output = T>> DataFrame<T> {
     fn len(&self) -> T {
         assert!(self.cols == 1);
         let vec_len: f64 = self.data.iter().fold(0.0, |acc, &x| acc + x.into() * x.into());
@@ -485,6 +486,39 @@ pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Outpu
     }
     lu
 }
+
+pub fn linear_regression_gd<T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T>> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> DataFrame<T> {
+    // 2A^T * A * x - 2 A^T * y = grad
+
+    let tol: f64 = 0.0001;
+    let mut grad: DataFrame<T> = DataFrame {
+        rows: datapoints.cols,
+        cols: 1,
+        data: vec![T::from(1.0); datapoints.cols],
+    };
+    let mut x: DataFrame<T> = DataFrame {
+        rows: datapoints.cols,
+        cols: 1,
+        data: vec![T::from(1.0); datapoints.cols],
+    };
+
+    while grad.len() > tol.into() {
+        // calculate gradient
+
+        let atax: DataFrame<T> = 2.0 * matrix_multiplication(&matrix_multiplication(&datapoints.transpose(), &datapoints), &x);
+        let aty: DataFrame<T> = 2.0 * matrix_multiplication(&datapoints.transpose(), &target);
+
+        grad = atax - aty;
+
+        // update x
+
+        x = x - grad;
+
+    }
+
+    x
+}
+
 
 pub fn linear_regression_lu<T: Copy + From<u8> + Div<Output = T> + Mul<Output = T> + Into<f64> + AddAssign + Sub<Output = T>> (datapoints: &DataFrame<T>, target: &DataFrame<T>) -> DataFrame<f64> {
     // based on LU decomposition
