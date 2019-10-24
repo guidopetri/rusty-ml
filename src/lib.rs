@@ -183,6 +183,27 @@ mod tests {
     }
 
     #[test]
+    fn test_matrix_pop() {
+        use crate::DataFrame;
+
+        let a = DataFrame {
+            rows: 2,
+            cols: 1,
+            data: [1.0,
+                   2.0,
+                   ].to_vec(),
+        };
+
+        let a_popped = DataFrame {
+            rows: 1,
+            cols: 1,
+            data: [1.0].to_vec(),
+        };
+
+        assert_eq!(a.pop(), a_popped);
+    }
+
+    #[test]
     fn test_matrix_subtraction() {
         use crate::DataFrame;
 
@@ -532,6 +553,16 @@ impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + Add<Output = T>> DataFr
 impl<T: Copy + Mul<Output = T> + Into<f64> + From<f64> + Add<Output = T>> DataFrame<T> {
     fn abs(&self) -> T {
         self.len()
+    }
+}
+
+impl<T: Copy> DataFrame<T> {
+    fn pop(&self) -> DataFrame<T> {
+        DataFrame {
+            rows: self.rows - 1,
+            cols: self.cols,
+            data: self.data[0.. (self.rows - 1) * self.cols].to_vec(),
+        }
     }
 }
 
