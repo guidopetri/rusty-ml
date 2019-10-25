@@ -474,6 +474,49 @@ mod tests {
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
     }
+
+    #[test]
+    fn test_ridge_regression_small() {
+        use crate::DataFrame;
+        use crate::ridge_regression;
+        use assert_approx_eq::assert_approx_eq;
+
+        let data = DataFrame {
+            rows: 4,
+            cols: 3,
+            data: [1.0, 2.0, 3.0,
+                   2.0, 3.0, 4.0,
+                   2.0, 4.0, 5.0,
+                   1.0, 2.0, 2.5,
+                   ].to_vec(),
+        };
+
+        let target = DataFrame {
+            rows: 4,
+            cols: 1,
+            data: [15.0,
+                   21.0,
+                   26.0,
+                   13.5,
+                   ].to_vec(),
+        };
+
+        let regression = DataFrame {
+            rows: 3,
+            cols: 1,
+            data: [1_f64,
+                   2.0,
+                   3.0,
+                   ].to_vec(),
+        };
+
+        let b: f64 = 1.0;
+
+        let result = ridge_regression(&data, &target, 0.0001, 0.001, 10000000, 1.0);
+
+        assert_approx_eq!(&result.0, &regression, 0.001);
+        assert_approx_eq!(&result.1, &b, 0.001);
+    }
 }
 
 
