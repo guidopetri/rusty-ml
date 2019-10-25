@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 assert_approx_eq="*"
+num="*"

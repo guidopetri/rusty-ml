@@ -6,6 +6,7 @@ use std::ops::Sub;
 use std::ops::Div;
 use std::ops::AddAssign;
 use std::cmp::PartialOrd;
+use num::Signed;
 // use std::cmp::PartialEq;
 
 #[cfg(test)]
@@ -665,6 +666,16 @@ impl<T: Copy> DataFrame<T> {
     }
 }
 
+impl<T: Copy + Div<Output = T> + Signed> DataFrame<T> {
+    fn signs(&self) -> DataFrame<T> {
+        DataFrame {
+            rows: self.rows,
+            cols: self.cols,
+            data: self.data.iter().map(|&x| x / num::abs(x)).collect(),
+        }
+    }
+}
+
 impl<T: Mul<Output = T> + Copy + From<f64>> std::ops::Mul<&DataFrame<T>> for f64 {
     type Output = DataFrame<T>;
 
@@ -733,7 +744,7 @@ pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>,
                                 tol: f64,
                                 step_size: f64,
                                 n_iter: i32) -> (DataFrame<T>, T) where
-    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
+    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
     linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, 0.0)
 }
 
@@ -743,7 +754,7 @@ pub fn lasso_regression<T> (datapoints: &DataFrame<T>,
                             step_size: f64,
                             n_iter: i32,
                             alpha: f64) -> (DataFrame<T>, T) where
-    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
+    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
     linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, alpha, 0.0)
 }
 
@@ -753,7 +764,7 @@ pub fn ridge_regression<T> (datapoints: &DataFrame<T>,
                             step_size: f64,
                             n_iter: i32,
                             alpha: f64) -> (DataFrame<T>, T) where
-    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
+    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
     linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, alpha)
 }
 
@@ -763,7 +774,7 @@ pub fn elastic_net_seq<T> (datapoints: &DataFrame<T>,
                        step_size: f64,
                        n_iter: i32,
                        alpha: f64) -> (DataFrame<T>, T) where
-    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
+    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
     linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, 0.0)
 }
 
@@ -774,7 +785,7 @@ pub fn linear_regression_gd_normed<T> (datapoints: &DataFrame<T>,
                                        n_iter: i32,
                                        l1_alpha: f64,
                                        l2_alpha: f64) -> (DataFrame<T>, T) where
-    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> {
+    T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
     // 2A^T * A * x - 2 A^T * y + l2_alpha * 2 * x + l1_alpha * signs(x) = grad
 
     let b_helper_col = DataFrame {
@@ -802,7 +813,7 @@ pub fn linear_regression_gd_normed<T> (datapoints: &DataFrame<T>,
         let atax: DataFrame<T> = 2.0 * &matrix_multiplication(&matrix_multiplication(&data.transpose(), &data), &x);
         let aty: DataFrame<T> = 2.0 * &matrix_multiplication(&data.transpose(), &target);
         let l2_reg: DataFrame<T> = 2.0 * l2_alpha * &x;
-        let l1_reg: DataFrame<T> = 2.0 * l1_alpha * &x;
+        let l1_reg: DataFrame<T> = l1_alpha * &x.signs();
 
         grad = &(&atax - &aty) + &(&l2_reg + &l1_reg);
 
