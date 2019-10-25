@@ -646,6 +646,18 @@ impl<T: Sub<Output = T> + Copy + From<f64>> std::ops::Sub<&DataFrame<T>> for &Da
     }
 }
 
+impl<T: Add<Output = T> + Copy + From<f64>> std::ops::Add<&DataFrame<T>> for &DataFrame<T> {
+    type Output = DataFrame<T>;
+
+    fn add(self, right: &DataFrame<T>) -> DataFrame<T> {
+        DataFrame {
+            rows: self.rows,
+            cols: self.cols,
+            data: self.data.iter().zip(right.data.iter()).map(|(&x, &y)| x + y).collect(),
+        }
+    }
+}
+
 pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Output = T> + AddAssign + Mul<Output = T>> (matrix: &DataFrame<T>) -> DataFrame<f64> {
     let mut lu = DataFrame {
         rows: matrix.rows,
