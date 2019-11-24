@@ -415,7 +415,53 @@ mod tests {
 
         let b: f64 = 1.0;
 
-        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 100000);
+        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 100000, true);
+
+        assert_approx_eq!(&result.0, &regression, 0.001);
+        assert_approx_eq!(&result.1, &b, 0.001);
+    }
+
+    #[test]
+    fn test_linear_regression_small_gd_2() {
+        use crate::DataFrame;
+        use crate::linear_regression_gd;
+        use assert_approx_eq::assert_approx_eq;
+
+        let data = DataFrame {
+            rows: 5,
+            cols: 4,
+            data: [ 1.1, -2.3,  1.7,  4.5,
+                    1.7,  1.6,  3.8,  0.3,
+                    1.0,  0.1,  1.3,  0.2,
+                   -0.5, -0.4,  0.0, -1.3,
+                   -0.5,  2.9, -0.3,  2.0,
+                   ].to_vec(),
+        };
+
+        let target = DataFrame {
+            rows: 5,
+            cols: 1,
+            data: [-13.8,
+                    -2.7,
+                     9.6,
+                    -2.4,
+                     3.9,
+                   ].to_vec(),
+        };
+
+        let regression = DataFrame {
+            rows: 4,
+            cols: 1,
+            data: [14.074_f64,
+                   3.606,
+                   -7.873,
+                   -1.748,
+                   ].to_vec(),
+        };
+
+        let b: f64 = 0.0;
+
+        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 1000000, false);
 
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
@@ -470,7 +516,7 @@ mod tests {
 
         let b: f64 = 0.7;
 
-        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 100000);
+        let result = linear_regression_gd(&data, &target, 0.0001, 0.001, 100000, true);
 
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
@@ -513,7 +559,7 @@ mod tests {
 
         let b: f64 = 1.0;
 
-        let result = ridge_regression(&data, &target, 0.0001, 0.001, 100000, 1.0);
+        let result = ridge_regression(&data, &target, 0.0001, 0.001, 100000, 1.0, true);
 
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
@@ -556,7 +602,7 @@ mod tests {
 
         let b: f64 = 1.0;
 
-        let result = lasso_regression(&data, &target, 0.0001, 0.001, 100000, 1.0);
+        let result = lasso_regression(&data, &target, 0.0001, 0.001, 100000, 1.0, true);
 
         assert_approx_eq!(&result.0, &regression, 0.001);
         assert_approx_eq!(&result.1, &b, 0.001);
@@ -598,7 +644,7 @@ pub fn matrix_multiplication<'t, T: 't + Mul<Output = T> + Add<Output = T> + Cop
     c
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DataFrame<T> {
     rows: usize,
     cols: usize,
@@ -755,6 +801,18 @@ impl<T: Add<Output = T> + Copy + From<f64>> std::ops::Add<&DataFrame<T>> for &Da
     }
 }
 
+/*impl<T: Copy + From<f64>> std::marker::Copy<&DataFrame<T>> for &DataFrame<T> {
+    type Output = DataFrame<T>;
+
+    fn mul(self, right: &DataFrame<T>) -> DataFrame<T> {
+        DataFrame {
+            rows: right.rows,
+            cols: right.cols,
+            data: right.data.iter().map(|&x| (T::from(self)) * x).collect(),
+        }
+    }
+}*/
+
 pub fn lu_decompose<T: Copy + From<u8> + Into<f64> + Sub<Output = T> + Div<Output = T> + AddAssign + Mul<Output = T>> (matrix: &DataFrame<T>) -> DataFrame<f64> {
     let mut lu = DataFrame {
         rows: matrix.rows,
@@ -786,9 +844,10 @@ pub fn linear_regression_gd<T> (datapoints: &DataFrame<T>,
                                 target: &DataFrame<T>,
                                 tol: f64,
                                 step_size: f64,
-                                n_iter: i32) -> (DataFrame<T>, T) where
+                                n_iter: i32,
+                                intercept: bool) -> (DataFrame<T>, T) where
     T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
-    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, 0.0)
+    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, 0.0, intercept)
 }
 
 pub fn lasso_regression<T> (datapoints: &DataFrame<T>,
@@ -796,9 +855,10 @@ pub fn lasso_regression<T> (datapoints: &DataFrame<T>,
                             tol: f64,
                             step_size: f64,
                             n_iter: i32,
-                            alpha: f64) -> (DataFrame<T>, T) where
+                            alpha: f64,
+                            intercept: bool) -> (DataFrame<T>, T) where
     T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
-    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, alpha, 0.0)
+    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, alpha, 0.0, intercept)
 }
 
 pub fn ridge_regression<T> (datapoints: &DataFrame<T>,
@@ -806,9 +866,10 @@ pub fn ridge_regression<T> (datapoints: &DataFrame<T>,
                             tol: f64,
                             step_size: f64,
                             n_iter: i32,
-                            alpha: f64) -> (DataFrame<T>, T) where
+                            alpha: f64,
+                            intercept: bool) -> (DataFrame<T>, T) where
     T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
-    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, alpha)
+    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, alpha, intercept)
 }
 
 pub fn elastic_net_seq<T> (datapoints: &DataFrame<T>,
@@ -816,9 +877,10 @@ pub fn elastic_net_seq<T> (datapoints: &DataFrame<T>,
                        tol: f64,
                        step_size: f64,
                        n_iter: i32,
-                       alpha: f64) -> (DataFrame<T>, T) where
+                       alpha: f64,
+                       intercept: bool) -> (DataFrame<T>, T) where
     T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
-    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, 0.0)
+    linear_regression_gd_normed(datapoints, target, tol, step_size, n_iter, 0.0, 0.0, intercept)
 }
 
 pub fn linear_regression_gd_normed<T> (datapoints: &DataFrame<T>,
@@ -827,7 +889,8 @@ pub fn linear_regression_gd_normed<T> (datapoints: &DataFrame<T>,
                                        step_size: f64,
                                        n_iter: i32,
                                        l1_alpha: f64,
-                                       l2_alpha: f64) -> (DataFrame<T>, T) where
+                                       l2_alpha: f64,
+                                       intercept: bool) -> (DataFrame<T>, T) where
     T: Copy + Sub<Output = T> + PartialOrd + Sum + Add<Output = T> + Into<f64> + From<f64> + Mul<Output = T> + Div<Output = T> + Signed {
     // 2A^T * A * x - 2 A^T * y + l2_alpha * 2 * x + l1_alpha * signs(x) = grad
 
@@ -836,7 +899,11 @@ pub fn linear_regression_gd_normed<T> (datapoints: &DataFrame<T>,
         cols: 1,
         data: vec![T::from(1.0); datapoints.rows],
     };
-    let data = datapoints.append_col(&b_helper_col);
+    let data = if intercept {
+      datapoints.append_col(&b_helper_col)
+    } else {
+      datapoints.clone()
+    };
     let mut grad: DataFrame<T> = DataFrame {
         rows: data.cols,
         cols: 1,
@@ -866,7 +933,11 @@ pub fn linear_regression_gd_normed<T> (datapoints: &DataFrame<T>,
         // update iter count
         iter += 1;
     }
-    let b: T = x.row(x.rows - 1)[0];
+    let b: T = if intercept {
+      x.row(x.rows - 1)[0]
+    } else {
+      T::from(0.0)
+    };
     (x.pop(), b)
 }
 
